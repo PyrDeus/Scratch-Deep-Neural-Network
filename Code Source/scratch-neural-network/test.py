@@ -2,6 +2,7 @@
 import numpy as np
 import cv2
 
+
 def sin2d(x,y):
     """2-d sine function to plot"""
     return np.sin(x) + np.cos(y)
@@ -30,4 +31,7 @@ while True:
     npimage=getFrame()
 
     cv2.imshow('image',npimage)
-    cv2.waitKey(1)
+    cv2.waitKey(10)
+    if cv2.getWindowProperty('image',cv2.WND_PROP_VISIBLE) < 1:        
+        break
+cv2.destroyAllWindows()
