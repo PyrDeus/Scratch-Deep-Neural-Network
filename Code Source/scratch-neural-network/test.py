@@ -3,40 +3,25 @@ import numpy as np
 import cv2
 
 class Screen:
-    def __init__(self, width, height, framerate=5):
+    def __init__(self, width = 640, height = 480, framerate=5):
         self.width = width
         self.height = height
         self.framerate = framerate
-        self.__frame = None
 
     def display_attributes(self):
         print(f"Width: {self.width}, Height: {self.height}\nFramerate:  {self.framerate}")
     
-    def display(self, func):
+    def display(self, model):
         while True:
-            npimage=self.__getFrame(func)
+            npimage = model() # Update the model
             
-            cv2.imshow('image', npimage)
-            cv2.waitKey(5)
+            cv2.imshow('image', npimage) # Show
+            cv2.waitKey(self.framerate)
+            
+            # Exit the loop if the window is closed
             if cv2.getWindowProperty('image',cv2.WND_PROP_VISIBLE) < 1:        
                 break
-        cv2.destroyAllWindows()
-    
-    
-    def __getFrame(self, func):
-        """Generate next getFrame.z of simulation as numpy array"""
-        
-        # Create data on first call only
-        if self.__frame is None:
-            
-            xx, yy = np.meshgrid(np.linspace(0,2*np.pi,self.width), np.linspace(0,2*np.pi,self.height))
-            self.__frame = func(xx, yy)
-            self.__frame = cv2.normalize(self.__frame,None,alpha=0,beta=1,norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
-
-        # Just roll data for subsequent calls
-        self.__frame = np.roll(self.__frame,(1,2),(0,1))
-        getFrame.z = self.__frame
-        return getFrame.z
+        cv2.destroyAllWindows() # Remove all windows (garde-fou)
 
     def run(self):
 
@@ -69,10 +54,8 @@ def getFrame():
     return getFrame.z
 
 
-# Frame size
 w, h = 640, 480
-
 getFrame.z = None
 
-screen = Screen(0,0)
+screen = Screen()
 screen.run()
