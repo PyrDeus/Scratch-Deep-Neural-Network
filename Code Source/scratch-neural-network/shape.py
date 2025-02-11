@@ -17,7 +17,7 @@ class Shape(ABC):
         return f"Class Shape\nSubclass None\nPosition: {self.position}"
     
     @abstractmethod
-    def draw():
+    def draw(self, canvas):
         pass
 
     def setColor(self, color:Color):
