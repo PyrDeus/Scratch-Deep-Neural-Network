@@ -9,22 +9,27 @@ import cv2
 from abc import ABC, abstractmethod
 import numpy as np
 
-class Shape(ABC):
-    def __init__(self, color:Color = Color.BLACK, thickness:int = 3):
+class Drawable(ABC):
+    def __init__(self, color:Color = Color.BLACK):
         self.color = color
-        self.thickness = thickness
-    
-    def __str__(self) -> str:
-        return f"Class Shape\nSubclass None\nPosition: {self.position}"
     
     @abstractmethod
     def draw(self, canvas):
         pass
 
-    def setColor(self, color:Color):
+    def setColor(self, color:tuple[int, int, int]):
         self.color = color
-    def getColor(self) -> Color:
+    def getColor(self) -> tuple[int, int, int]:
         return self.color
+
+class Shape(Drawable, ABC):
+    def __init__(self, color:Color = Color.BLACK, thickness:int = 3):
+        super().__init__(color)
+        self.thickness = thickness
+    
+    @abstractmethod
+    def __str__(self) -> str:
+        pass
 
 class Circle(Shape):
     def __init__(self, center: tuple[int, int], radius: int, color: Color = Color.BLACK, thickness:int = 3):

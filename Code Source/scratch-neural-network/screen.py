@@ -5,6 +5,7 @@
 
 from shape import *
 from typing import List
+from sample import *
 
 import numpy as np
 import cv2
@@ -22,7 +23,7 @@ class Screen:
         if model: print("\n".join(str(s) for s in self.shapes))
 
     def __createBlankCanvas(self, width, height) -> np.ndarray:
-        return np.ones((height, width, 3), dtype="uint8")
+        return np.ones((height, width, 3), dtype="uint8")*255
 
     def setDimensions(self, width: int, height: int):
         self.width = width
@@ -32,16 +33,16 @@ class Screen:
     def getDimensions(self) -> tuple[int, int]:
         return self.width, self.height
 
-    def addShape(self, shape: Shape):
+    def add(self, shape: Drawable):
         self.shapes.append(shape)
 
-    def addShapes(self, shapes: List[Shape]):
+    def extend(self, shapes: List[Drawable]):
         self.shapes.extend(shapes)
 
-    def getShapes(self) -> List[Shape]:
+    def getDrawn(self) -> List[Drawable]:
         return self.shapes
 
-    def setShapes(self, shapes: List[Shape]):
+    def set(self, shapes: List[Drawable]):
         #self.shapes = [] # Needed?
         self.shapes = shapes 
 
@@ -73,9 +74,9 @@ class Screen:
         self.canvas = self.__createBlankCanvas(self.width, self.height)
 
 
-
 if __name__ == "__main__":
     import cv2
+    from utils import random_color_label, random_shape_label
 
     # w, h = extractMonitorDimensions()
     w, h = 640, 480
@@ -99,12 +100,13 @@ if __name__ == "__main__":
         radius = np.random.randint(5, 0.5*h)
         center = np.random.randint([radius, radius], [w-radius, h-radius])
         
-        # screen.addShape(Rectangle(pt_1, pt_2, color, thickness))
-        # screen.addShape(Circle(center, radius, color, thickness))
-        # screen.addShape(Pentagon(center, radius, color, thickness))
-        # screen.addShape(Hexagon(center, radius, color, thickness))
-        # screen.addShape(Triangle(center, radius, color, thickness))
-        screen.addShape(Square(center, radius, color, thickness))
+        # screen.add(Rectangle(pt_1, pt_2, color, thickness))
+        # screen.add(Circle(center, radius, color, thickness))
+        # screen.add(Pentagon(center, radius, color, thickness))
+        # screen.add(Hexagon(center, radius, color, thickness))
+        # screen.add(Triangle(center, radius, color, thickness))
+        # screen.add(Square(center, radius, color, thickness))
+        screen.add(Sample2D(pt_1, random_shape_label(), random_color_label()))
         
         screen.update()
         

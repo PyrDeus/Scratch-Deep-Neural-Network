@@ -23,7 +23,7 @@ while True:
     color = np.random.uniform([0, 0, 0], [255, 255, 255])
     thickness = np.random.randint(-1, 5)
 
-    screen.addShape(Rectangle(pt_1, pt_2, color, thickness))
+    screen.add(Rectangle(pt_1, pt_2, color, thickness))
     
     screen.update()
     
