@@ -90,13 +90,21 @@ if __name__ == "__main__":
         
         # screen.erase()
 
-        pt_1 = np.random.randint([0, 0], [w, h])
-        pt_2 = np.random.randint([0, 0], [w, h])
-        
         color = np.random.uniform([0, 0, 0], [255, 255, 255])
         thickness = np.random.randint(-1, 5)
 
-        screen.addShape(Rectangle(pt_1, pt_2, color, thickness))
+        pt_1 = np.random.randint([0, 0], [w, h])
+        pt_2 = np.random.randint([0, 0], [w, h])
+        
+        radius = np.random.randint(5, 0.5*h)
+        center = np.random.randint([radius, radius], [w-radius, h-radius])
+        
+        # screen.addShape(Rectangle(pt_1, pt_2, color, thickness))
+        # screen.addShape(Circle(center, radius, color, thickness))
+        # screen.addShape(Pentagon(center, radius, color, thickness))
+        # screen.addShape(Hexagon(center, radius, color, thickness))
+        # screen.addShape(Triangle(center, radius, color, thickness))
+        screen.addShape(Square(center, radius, color, thickness))
         
         screen.update()
         
