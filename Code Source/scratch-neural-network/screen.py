@@ -24,12 +24,12 @@ class Screen:
     def __createBlankCanvas(self, width, height) -> np.ndarray:
         return np.ones((height, width, 3), dtype="uint8")
 
-    def setDimensions(width: int, height: int):
+    def setDimensions(self, width: int, height: int):
         self.width = width
         self.height = height
         self.view.setDimensions(width, height)
     
-    def getDimensions() -> tuple[int, int]:
+    def getDimensions(self) -> tuple[int, int]:
         return self.width, self.height
 
     def addShape(self, shape: Shape):
