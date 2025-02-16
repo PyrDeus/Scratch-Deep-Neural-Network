@@ -44,3 +44,4 @@ def random_color_label() -> str:
 
 def random_shape_label() -> str:
     return ['circle', 'triangle', 'square', 'pentagon', 'hexagon'] [random.randint(0, 4)]
+

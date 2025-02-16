@@ -17,6 +17,10 @@ class Drawable(ABC):
     def draw(self, canvas):
         pass
 
+    @abstractmethod
+    def copy(self, canvas):
+        pass
+
     def setColor(self, color:tuple[int, int, int]):
         self.color = color
     def getColor(self) -> tuple[int, int, int]:
@@ -56,6 +60,8 @@ class Circle(Shape):
         # negative value for thickness means fill
         cv2.circle(canvas, self.center, self.radius, self.color, self.thickness)
 
+    def copy(self):
+        return Circle(self.center, self.radius, self.color, self.thickness)
 
 class Rectangle(Shape):
     def __init__(self, point_1: tuple[int, int], point_2: tuple[int, int], color: Color = Color.BLACK, thickness:int = 3):
