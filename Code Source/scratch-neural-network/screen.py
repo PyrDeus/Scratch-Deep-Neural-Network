@@ -153,7 +153,7 @@ class Screen(Canvas):
                 break
         cv2.destroyAllWindows() # Garde-fou
 
-    def waitEvent(self, time=30):
+    def waitEvent(self, time=30, verbose=False):
         # 1: Nothing
         # 0: Window closed
         # < 0: All events that should terminate the running
@@ -161,11 +161,32 @@ class Screen(Canvas):
         if cv2.getWindowProperty(self.name, cv2.WND_PROP_VISIBLE) < 1:        
             return 0
         
+        screen.update()
+        if verbose and keys != -1: print(f"keys = {keys}")
         if keys == 27: # Escape key
-            return -1
+            return 0
         elif keys == ord('s'):
             # self.__save()
+            return 1
+        elif keys == ord('l'):
+            # self.__load()
+            return 1
+        elif keys == 32: #spacebar
             return 2
+        return 1
+
+    def waitKey(self, verbose=False):
+        # key = 32 is the spacebar by default
+        while True:
+            match self.waitEvent(time = 100, verbose=verbose):
+                case 1:
+                    continue
+                case 2:
+                    return 1
+                case 0:
+                    return 0
+                case _:
+                    return "unexpected"
         return 1
 
     def show(self):
@@ -208,21 +229,36 @@ class Screen(Canvas):
     def __mouse(self, event, x, y, flags, param):
         # print(x, y, event, flags, param)
         if event == 1:
-            print(f"Left-button pressed on {(x,y)}")
-            if self.detectColor(x,y):
-                selected_shape = self.__closestShape(x, y)
-                print(selected_shape)
-                self.selector.setShape(selected_shape)
-        elif event == 2 and flags == 2:
-            print(f"Right-button pressed on {(x,y)}")
+            # print(f"Left-button pressed on {(x,y)}")
             if self.detectColor(x, y):
                 self.removeShape(self.__closestShape(x, y))
+                print("Shape removed")
             else:
                 self.add(Sample2D((x,y), 
                 self.selector.getShapeLabel(), 
                 self.selector.getColorLabel()))
-        elif event == 7:
-            print(f"Double Left-button clicked on {(x,y)}")
+                print("Shape added")
+            
+        elif event == 2:
+            # print(f"Right-button pressed on {(x,y)}")
+            if self.detectColor(x,y):
+                selected_shape = self.__closestShape(x, y)
+                # print(selected_shape)
+                self.selector.setShape(selected_shape)
+                print(f"Shape selected:\n{selected_shape}")
+            else:
+                print("No shape selected")
+        elif event == 3:
+            pt = np.random.randint([0, 0], [w, h]) ## Avoid collision with other shape ?
+            created_shape = Sample2D(pt, random_shape_label(), random_color_label())
+            self.add(created_shape)
+            self.selector.setShape(created_shape)
+            print("Random shape created")
+
+
+        
+        # elif event == 7:
+        #     print(f"Double Left-button clicked on {(x,y)}")
 
 if __name__ == "__main__":
     import cv2
@@ -234,26 +270,13 @@ if __name__ == "__main__":
     screen.show()
 
     while True:
-        if screen.waitEvent(300) < 1:
+
+        criteria = screen.waitKey(verbose=False)
+        if criteria == 0:
             break
-        # screen.erase()
 
-        color = np.random.uniform([0, 0, 0], [255, 255, 255])
-        thickness = np.random.randint(-1, 5)
-
-        pt_1 = np.random.randint([0, 0], [w, h])
-        pt_2 = np.random.randint([0, 0], [w, h])
-        
-        radius = np.random.randint(5, 0.5*h)
-        center = np.random.randint([radius, radius], [w-radius, h-radius])
-        
-        # screen.add(Rectangle(pt_1, pt_2, color, thickness))
-        # screen.add(Circle(center, radius, color, thickness))
-        # screen.add(Pentagon(center, radius, color, thickness))
-        # screen.add(Hexagon(center, radius, color, thickness))
-        # screen.add(Triangle(center, radius, color, thickness))
-        # screen.add(Square(center, radius, color, thickness))
-        screen.add(Sample2D(pt_1, random_shape_label(), random_color_label()))
+        pt = np.random.randint([0, 0], [w, h])
+        screen.add(Sample2D(pt, random_shape_label(), random_color_label()))
         
         screen.update()
     screen.destroyWindow() # Garde-fou
