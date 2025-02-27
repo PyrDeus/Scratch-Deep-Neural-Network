@@ -2,6 +2,7 @@
 # screen.py
 # Useful view classes
 
+# Opencv values doc: https://docs.opencv.org/4.5.0/d4/dd5/highgui_8hpp.html
 
 from shape import *
 from typing import List
@@ -175,7 +176,12 @@ class Screen(Canvas):
                 self.add(Sample2D(sample_dict['position'], 
                 sample_dict['shape'], 
                 sample_dict['color']))
+        self.canvas = self._createBlankCanvas(self.width, self.height)
+        self.__to_front()
 
+    def __to_front(self, selector=True):
+        cv2.setWindowProperty(self.name, cv2.WND_PROP_TOPMOST, 1)
+        if selector: cv2.setWindowProperty(self.selector.name, cv2.WND_PROP_TOPMOST, 1)
 
     def waitEvent(self, time=30, verbose=False):
         # 1: Nothing
