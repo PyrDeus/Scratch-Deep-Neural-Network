@@ -56,8 +56,13 @@ class Sample2D(Sample):
         self.__shape_label = shape
 
     def __str__(self):
-        return f"Class Sample\nShape Label: {self.__shape_label}\nColor Label: {self.__color_label}"
+        return f"shape: {self.__shape_label}, color: {self.__color_label}, position: {self.position}"
     
+    def __iter__(self):
+            yield 'shape', self.__shape_label
+            yield 'color', self.__color_label
+            yield 'position', self.position
+
     def getColor(self) -> tuple[int, int, int]:
         return self.color
     

@@ -11,7 +11,8 @@ from sample import color_classes, shape_classes
 from abc import ABC, abstractmethod
 import numpy as np
 import cv2
-
+import os
+import ast
 
 class Canvas(ABC):
     def _createBlankCanvas(self, width, height) -> np.ndarray:
@@ -136,7 +137,7 @@ class Screen(Canvas):
 
     def set(self, shapes: List[Drawable]):
         #self.shapes = [] # Needed?
-        self.shapes = shapes 
+        self.shapes = shapes
 
     def __drawCanvas(self):
         for s in self.shapes:
@@ -153,6 +154,29 @@ class Screen(Canvas):
                 break
         cv2.destroyAllWindows() # Garde-fou
 
+    def __save_model(self, filename):
+        if os.path.exists(filename):
+            i = 1
+            f = f"{filename} ({i})"
+            while os.path.exists(f):
+                i += 1
+                f = f"{filename} ({i})"
+            filename = f
+
+        with open(filename, 'x') as file:
+            for s in self.shapes:
+                file.write(f"{dict(s)}\n")
+    
+    def __load_model(self, filename):
+        self.shapes: List[Shape] = []
+        with open(filename, 'r') as file:
+            for line in file:
+                sample_dict = ast.literal_eval(line)
+                self.add(Sample2D(sample_dict['position'], 
+                sample_dict['shape'], 
+                sample_dict['color']))
+
+
     def waitEvent(self, time=30, verbose=False):
         # 1: Nothing
         # 0: Window closed
@@ -166,10 +190,21 @@ class Screen(Canvas):
         if keys == 27: # Escape key
             return 0
         elif keys == ord('s'):
-            # self.__save()
+            self.__save_model("levels\creation_model")
             return 1
         elif keys == ord('l'):
-            # self.__load()
+            levels = dict(enumerate(os.listdir("levels")))
+            
+            for key, value in levels.items():
+                print(f"{key}:  {value}")
+            index = int(input("Which level to choose?\n"))
+            while index not in levels.keys():
+                for key, value in levels.items():
+                    print(f"{key}:  {value}")
+                    
+                index = int(input(f"\"{index}\" is an unexpected value, which level to choose?\n"))
+
+            self.__load_model(f"levels\{levels[index]}")
             return 1
         elif keys == 32: #spacebar
             return 2
