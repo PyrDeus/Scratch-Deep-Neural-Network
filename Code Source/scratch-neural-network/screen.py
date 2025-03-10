@@ -245,7 +245,7 @@ class Screen(Canvas):
             return None
         closest_shape = self.shapes[0]
         closest_v = np.abs(closest_shape.x - x) + np.abs(closest_shape.y - y)
-        for s in self.shapes[1:-1]:
+        for s in self.shapes[1:]:
             v = np.abs(s.x - x) + np.abs(s.y - y)
             if v < closest_v:
                 closest_shape = s
