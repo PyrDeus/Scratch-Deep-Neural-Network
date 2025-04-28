@@ -27,7 +27,7 @@ class Color(Enum):
     MAROON = (128, 0, 0)
     SILVER = (192, 192, 192)
     GOLD = (255, 215, 0)
-
+    BACKGROUND = 245
 
 
 def extractMonitorDimensions() -> tuple[int, int]:
@@ -38,10 +38,4 @@ def extractMonitorDimensions() -> tuple[int, int]:
 
     return monitor.width, monitor.height
 
-
-def random_color_label() -> str:
-    return ['red', 'green', 'blue', 'yellow', 'cyan', 'magenta'] [random.randint(0, 5)]
-
-def random_shape_label() -> str:
-    return ['circle', 'triangle', 'square', 'pentagon', 'hexagon'] [random.randint(0, 4)]
 

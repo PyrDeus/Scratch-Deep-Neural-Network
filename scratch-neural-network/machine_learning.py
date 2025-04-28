@@ -53,17 +53,40 @@ class Neuron:
 
 
 class Layer:
-    def __init__(self, input_size, output_size, activation_function='sigmoid'):
-        self.neurons = [Neuron(input_size, activation_function) for _ in range(output_size)]
+    def __init__(self, output_size, activation_function='sigmoid', layer_type = "dense"):
+        self.input_size = None
+        self.output_size = output_size
+        self.neurons = None
+        self.activation_function = activation_function
+        self.layer_type = layer_type #TODO Manage layer type
+
+    def compile(self, input_size):
+        self.neurons = [Neuron(input_size, self.activation_function) for _ in range(self.output_size)]
 
     def forward(self, inputs):
         return np.array([neuron.forward(inputs) for neuron in self.neurons])
 
 
 class NeuralNetwork:
-    def __init__(self, layers, learning_rate):
-        self.layers = layers
-        self.learning_rate = learning_rate
+    def __init__(self, model_type="sequential"):
+        self.layers = []
+        # self.learning_rate = learning_rate
+        self.optimizer = None
+        self.loss_function = None
+        self.metrics = None
+        self.model_type = model_type #TODO Manage type de model
+
+    def add(self, layer:Layer):
+        self.layers.append(layer)
+
+    def extend(self, layers:numpy.ndarray):
+        for layer in layers:
+            self.layers.append(layer)
+
+    def compile(self, optimizer, loss_function, metrics=None):
+        self.optimizer = optimizer
+        self.loss_function = loss_function #TODO Manage loss function
+        self.metrics = metrics
 
     def forward(self, inputs):
         for layer in self.layers:
@@ -103,27 +126,11 @@ class NeuralNetwork:
         return np.mean((outputs - target) ** 2)  # Mean squared error
 
 
-
 if __name__ == "__main__":
-    # Example usage:
-    neuron_sigmoid = Neuron(input_size=3, activation_function='sigmoid')
-    neuron_relu = Neuron(input_size=3, activation_function='relu')
-
-    inputs = np.array([0.5, -0.2, 0.1])
-    print(neuron_sigmoid.forward(inputs))
-    print(neuron_relu.forward(inputs))
-
-
-    # Example usage:
-    layer1 = Layer(input_size=3, output_size=4, activation_function='relu')
-    layer2 = Layer(input_size=4, output_size=2, activation_function='sigmoid')
-    network = NeuralNetwork(layers=[layer1, layer2])
-
-    inputs = np.array([0.5, -0.2, 0.1])
-    outputs = network.forward(inputs)
-    print(outputs)
-
-
-
+    print("Nothing done")
+    net = np.empty((3,3), dtype=Layer)
+    net[0, 0] = (Layer(3, activation_function='sigmoid'))
+    print(type(net))
+    print(type(net[0,0]))
 
 

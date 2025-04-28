@@ -1,7 +1,7 @@
 ###
 # shape.py
-# Contains shapes and useful classes to use on the canvas of the Screen class (screen.py) 
-
+# Contains shapes and useful classes to use on the canvas of the Screen class (window.py)
+import copy
 
 from utils import *
 
@@ -9,63 +9,200 @@ import cv2
 from abc import ABC, abstractmethod
 import numpy as np
 
+
+
 class Drawable(ABC):
-    def __init__(self, color:Color = Color.BLACK):
-        self.color = color
-    
     @abstractmethod
-    def draw(self, canvas):
+    def draw(self, window):
         pass
 
-    @abstractmethod
-    def copy(self, canvas):
-        pass
+class Shape(Drawable):
+    def __init__(self, position:tuple[int, int], color:Color = Color.BLACK.value, thickness:int = 3):
+        self.position = position
 
-    def setColor(self, color:tuple[int, int, int]):
         self.color = color
-    def getColor(self) -> tuple[int, int, int]:
-        return self.color
-
-class Shape(Drawable, ABC):
-    def __init__(self, color:Color = Color.BLACK, thickness:int = 3):
-        super().__init__(color)
         self.thickness = thickness
-    
-    @abstractmethod
+
     def __str__(self) -> str:
         pass
 
+    def __iter__(self):
+        for key, value in self.__dict__:
+            yield key, value
+
+    def draw(self, window):
+        pass
+
+    def getColor(self) -> tuple[int, int, int]:
+        return self.color
+    def setColor(self, color:tuple[int, int, int]):
+        self.color = color
+
+    def getThickness(self) -> int:
+        return self.thickness
+    def setThickness(self, thickness: int):
+        self.thickness = thickness
+
+    def getPosition(self) -> tuple[int, int]:
+        return self.position
+    def setPosition(self, position: tuple[int, int]):
+        self.position = position
+
+    def getShape(self) -> type:
+        return type(self)
+
+    def toDict(self) -> dict:
+        return {"shape": self.getShape(), "color": self.getColor(), "position": self.getPosition(), "thickness": self.getThickness()}
+
+    def copy(self):
+        return copy.deepcopy(self)
+
+    def clone(self, **params):
+        cloned_version = self.copy()
+        for parameter, value in params['diff_params'].items():
+            setattr(cloned_version, parameter, value)
+        return cloned_version
+
+    @property
+    def x(self):
+        return self.position[0]
+
+    @property
+    def y(self):
+        return self.position[1]
+
+
 class Circle(Shape):
-    def __init__(self, center: tuple[int, int], radius: int, color: Color = Color.BLACK, thickness:int = 3):
-        super().__init__(color, thickness)
-        self.center = center
+    def __init__(self, position: tuple[int, int], radius: int = 9, color: Color = Color.BLACK.value, thickness:int = -1):
+        super().__init__(position, color, thickness)
         self.radius = radius
 
-    def getCenter(self) -> int:
-        return self.center
+    def __str__(self) -> str:
+        return f"Class Shape\nSubclass Circle\nPosition: {self.position}\nRadius: {self.radius}\nColor: {self.color}"
 
-    def setCenter(self, center: tuple[int, int]):
-        self.center = center
+    # def getCenter(self) -> int:
+    #     return self.getPosition()
+    # def setCenter(self, center: tuple[int, int]):
+    #     self.center = center
+    #     setPosition(center)
+    #override
+    def setPosition(self, position: tuple[int, int]):
+        # self.center = position
+        super().setPosition(position)
 
     def getRadius(self) -> int:
         return self.radius
-
     def setRadius(self, radius: int):
         self.radius = radius
 
-    def __str__(self) -> str:
-        return f"Class Shape\nSubclass Circle\nCenter: {self.center}\nRadius: {self.radius}\nColor: {self.color}"
-
-    def draw(self, canvas):
+    def draw(self, window):
         # negative value for thickness means fill
-        cv2.circle(canvas, self.center, self.radius, self.color, self.thickness)
+        cv2.circle(window, self.position, self.radius, self.color, self.thickness)
 
-    def copy(self):
-        return Circle(self.center, self.radius, self.color, self.thickness)
+    def cast(self, circle_based_shape: type):
+        # if type not in [Circle, Triangle, Square, Pentagon, Hexagon]:
+        #     raise Exception("Not circle-based shape")
+        return circle_based_shape(position=self.position, radius=self.radius, color=self.color, thickness=self.thickness)
+
+    # def copy(self):
+    #     return self.getShape()(self.position, self.radius, self.color, self.thickness)
+
+class Cross(Circle):
+    def __init__(self, position: tuple[int, int], radius: int = 4, color: Color = Color.BLACK.value, thickness: int = 1):
+        super().__init__(position, radius, color, thickness)
+
+    def __str__(self) -> str:
+        return f"Class Shape\nSubclass Cross\nPosition: {self.position}\nRadius: {self.radius}\nColor: {self.color}"
+
+    def draw(self, window):
+        cv2.line(window,
+                 [int(self.position[0] - self.radius * np.cos(0.25 * np.pi)), int(self.position[1] - self.radius * np.sin(0.25 * np.pi))],
+                 [int(self.position[0] - self.radius * np.cos(1.25 * np.pi)), int(self.position[1] - self.radius * np.sin(1.25 * np.pi))],
+                 self.color, self.thickness)
+        cv2.line(window,
+                 [int(self.position[0] - self.radius * np.cos(0.75 * np.pi)), int(self.position[1] - self.radius * np.sin(0.75 * np.pi))],
+                 [int(self.position[0] - self.radius * np.cos(-0.25 * np.pi)), int(self.position[1] - self.radius * np.sin(-0.25 * np.pi))],
+                 self.color, self.thickness)
+
+
+class Triangle(Circle):
+    def __init__(self, position: tuple[int, int], radius: int = 9, color: Color = Color.BLACK.value, thickness: int = -1):
+        super().__init__(position, radius, color, thickness)
+
+    def __str__(self) -> str:
+        return f"Class Shape\nSubclass Triangle\n"
+
+    def draw(self, window):
+        sides = 3
+        angle = 2*np.pi / sides
+        
+        pts = np.array([[ ( int(self.position[0] - self.radius * np.cos(-0.5 * np.pi + (i-0.5) * angle)), int(self.position[1] - self.radius * np.sin(-0.5 * np.pi + (i-0.5) * angle))) for i in range(sides)] ])
+
+        if self.thickness < 0:
+            cv2.fillPoly(window, pts, color=self.color)
+        else:
+            cv2.polylines(window, pts, isClosed=True, color=self.color, thickness=self.thickness)
+
+
+class Square(Circle):
+    def __init__(self, position: tuple[int, int], radius: int = 9, color: Color = Color.BLACK.value, thickness: int = -1):
+        super().__init__(position, radius, color, thickness)
+
+    def __str__(self) -> str:
+        return f"Class Shape\nSubclass Square\n"
+
+    def draw(self, window):
+        sides = 4
+        angle = 2*np.pi / sides
+        
+        pts = np.array([[ ( int(self.position[0] - self.radius * np.cos(-0.5 * np.pi + (i-0.5) * angle)), int(self.position[1] - self.radius * np.sin(-0.5 * np.pi + (i-0.5) * angle))) for i in range(sides)] ])
+
+        if self.thickness < 0:
+            cv2.fillPoly(window, pts, color=self.color)
+        else:
+            cv2.polylines(window, pts, isClosed=True, color=self.color, thickness=self.thickness)
+       
+class Pentagon(Circle):
+    def __init__(self, position: tuple[int, int], radius: int = 9, color: Color = Color.BLACK.value, thickness: int = -1):
+        super().__init__(position, radius, color, thickness)
+
+    def __str__(self) -> str:
+        return f"Class Shape\nSubclass Pentagon\n"
+    
+
+    def draw(self, window):
+        sides = 5
+        angle = 2*np.pi / sides
+        
+        pts = np.array([[ ( int(self.position[0] - self.radius * np.cos(-0.5 * np.pi + (i-0.5) * angle)), int(self.position[1] - self.radius * np.sin(-0.5 * np.pi + (i-0.5) * angle))) for i in range(sides)] ])
+
+        if self.thickness < 0:
+            cv2.fillPoly(window, pts, color=self.color)
+        else:
+            cv2.polylines(window, pts, isClosed=True, color=self.color, thickness=self.thickness)
+
+class Hexagon(Circle):
+    def __init__(self, position: tuple[int, int], radius: int = 9, color: Color = Color.BLACK.value, thickness: int = -1):
+        super().__init__(position, radius, color, thickness)
+
+    def __str__(self) -> str:
+        return f"Class Shape\nSubclass Hexagon\n"
+    
+    def draw(self, window):
+        sides = 6
+        angle = 2*np.pi / sides
+        
+        pts = np.array([[ ( int(self.position[0] - self.radius * np.cos(-0.5 * np.pi + (i-0.5) * angle)), int(self.position[1] - self.radius * np.sin(-0.5 * np.pi + (i-0.5) * angle))) for i in range(sides)] ])
+
+        if self.thickness < 0:
+            cv2.fillPoly(window, pts, color=self.color)
+        else:
+            cv2.polylines(window, pts, isClosed=True, color=self.color, thickness=self.thickness)
+
 
 class Rectangle(Shape):
-    def __init__(self, point_1: tuple[int, int], point_2: tuple[int, int], color: Color = Color.BLACK, thickness:int = 3):
-        super().__init__(color, thickness)
+    def __init__(self, point_1: tuple[int, int], point_2: tuple[int, int], color: Color = Color.BLACK.value, thickness:int = 3):
+        super().__init__(None, color, thickness)
         self.point_1 = point_1
         self.point_2 = point_2
 
@@ -87,100 +224,22 @@ class Rectangle(Shape):
     def __str__(self) -> str:
         return f"Class Shape\nSubclass Rectangle\nPoint 1: {self.point_1}\nPoint 2: {self.point_2}\nColor: {self.color}"
 
-    def draw(self, canvas):
+    def draw(self, window):
         # negative value for thickness means fill
-        cv2.rectangle(canvas, self.point_1, self.point_2, self.color, self.thickness)
+        cv2.rectangle(window, self.point_1, self.point_2, self.color, self.thickness)
         # pts = np.array([[10,5],[20,30],[70,20],[50,10]], np.int32)
         # pts = pts.reshape((-1,1,2))
         # cv.polylines(img,[pts],True,(0,255,255))
 
 class Line(Rectangle):
-    def __init__(self, point_1:tuple[int, int], point_2:tuple[int, int], color = Color.BLACK, thickness = 3):
+    def __init__(self, point_1:tuple[int, int], point_2:tuple[int, int], color = Color.BLACK.value, thickness = 3):
         super().__init__(point_1, point_2, color, thickness)
 
     def __str__(self) -> str:
         return f"Class Shape\nSubclass Line\nPoint 1: {self.point_1}\nPoint 2: {self.point_2}\nColor: {self.color}"
 
-    def draw(self, canvas):
-        cv2.line(canvas, self.point_1, self.point_2, self.color, self.thickness)
-
-
-class Triangle(Circle):
-    def __init__(self, center, radius, color = Color.BLACK, thickness = 3):
-        super().__init__(center, radius, color, thickness)
-
-    def __str__(self) -> str:
-        return f"Class Shape\nSubclass Triangle\n"
-
-    def draw(self, canvas):
-        sides = 3
-        angle = 2*np.pi / sides
-        
-        pts = np.array([[ ( int(self.center[0] - self.radius * np.cos(-0.5 * np.pi + (i-0.5) * angle)), int(self.center[1] - self.radius * np.sin(-0.5 * np.pi + (i-0.5) * angle))) for i in range(sides)] ])
-
-        if self.thickness < 0:
-            cv2.fillPoly(canvas, pts, color=self.color)
-        else:
-            cv2.polylines(canvas, pts, isClosed=True, color=self.color, thickness=self.thickness)
-        
-class Square(Circle):
-    def __init__(self, center, radius, color = Color.BLACK, thickness = 3):
-        super().__init__(center, radius, color, thickness)
-
-    def __str__(self) -> str:
-        return f"Class Shape\nSubclass Square\n"
-
-    def draw(self, canvas):
-        sides = 4
-        angle = 2*np.pi / sides
-        
-        pts = np.array([[ ( int(self.center[0] - self.radius * np.cos(-0.5 * np.pi + (i-0.5) * angle)), int(self.center[1] - self.radius * np.sin(-0.5 * np.pi + (i-0.5) * angle))) for i in range(sides)] ])
-
-        if self.thickness < 0:
-            cv2.fillPoly(canvas, pts, color=self.color)
-        else:
-            cv2.polylines(canvas, pts, isClosed=True, color=self.color, thickness=self.thickness)
-       
-class Pentagon(Circle):
-    def __init__(self, center, radius, color = Color.BLACK, thickness = 3):
-        super().__init__(center, radius, color, thickness)
-
-
-    def __str__(self) -> str:
-        return f"Class Shape\nSubclass Pentagon\n"
-    
-
-    def draw(self, canvas):
-        sides = 5
-        angle = 2*np.pi / sides
-        
-        pts = np.array([[ ( int(self.center[0] - self.radius * np.cos(-0.5 * np.pi + (i-0.5) * angle)), int(self.center[1] - self.radius * np.sin(-0.5 * np.pi + (i-0.5) * angle))) for i in range(sides)] ])
-
-        if self.thickness < 0:
-            cv2.fillPoly(canvas, pts, color=self.color)
-        else:
-            cv2.polylines(canvas, pts, isClosed=True, color=self.color, thickness=self.thickness)
-        
-
-
-class Hexagon(Circle):
-    def __init__(self, center, radius, color = Color.BLACK, thickness = 3):
-        super().__init__(center, radius, color, thickness)
-
-    def __str__(self) -> str:
-        return f"Class Shape\nSubclass Hexagon\n"
-    
-    def draw(self, canvas):
-        sides = 6
-        angle = 2*np.pi / sides
-        
-        pts = np.array([[ ( int(self.center[0] - self.radius * np.cos(-0.5 * np.pi + (i-0.5) * angle)), int(self.center[1] - self.radius * np.sin(-0.5 * np.pi + (i-0.5) * angle))) for i in range(sides)] ])
-
-        if self.thickness < 0:
-            cv2.fillPoly(canvas, pts, color=self.color)
-        else:
-            cv2.polylines(canvas, pts, isClosed=True, color=self.color, thickness=self.thickness)
-
+    def draw(self, window):
+        cv2.line(window, self.point_1, self.point_2, self.color, self.thickness)
 
 
 if __name__ == "__main__":
