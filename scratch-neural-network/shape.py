@@ -3,12 +3,12 @@
 # Contains shapes and useful classes to use on the canvas of the Screen class (window.py)
 import copy
 
-from utils import *
+from utils import Color
 
 import cv2
 from abc import ABC, abstractmethod
 import numpy as np
-
+import random
 
 
 class Drawable(ABC):
@@ -48,11 +48,11 @@ class Shape(Drawable):
     def setPosition(self, position: tuple[int, int]):
         self.position = position
 
-    def getShape(self) -> type:
+    def getShapeType(self) -> type:
         return type(self)
 
     def toDict(self) -> dict:
-        return {"shape": self.getShape(), "color": self.getColor(), "position": self.getPosition(), "thickness": self.getThickness()}
+        return {"shape": self.getShapeType(), "color": self.getColor(), "position": self.getPosition(), "thickness": self.getThickness()}
 
     def copy(self):
         return copy.deepcopy(self)
@@ -240,6 +240,14 @@ class Line(Rectangle):
 
     def draw(self, window):
         cv2.line(window, self.point_1, self.point_2, self.color, self.thickness)
+
+
+def randomShape(w, h) -> Circle:
+    color = [Color.RED.value, Color.GREEN.value, Color.BLUE.value, Color.YELLOW.value, Color.CYAN.value, Color.MAGENTA.value][
+        random.randint(0, 5)]
+    shape = [Circle, Triangle, Square, Pentagon, Hexagon][random.randint(0, 4)]
+    position = np.random.randint([0, 0], [w, h])
+    return shape(position=position, color=color, thickness=-1)
 
 
 if __name__ == "__main__":

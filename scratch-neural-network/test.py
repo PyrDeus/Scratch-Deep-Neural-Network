@@ -1,12 +1,12 @@
 #!/usr/local/bin/python3
 
-from window import Screen
+from window import Canvas
 
-s = Screen(200, 200)
+s = Canvas(200, 200)
 print(id(s))
 print(type(id(s)))
 
-print(type(type(Screen)))
+print(type(type(Canvas)))
 
 
 string:str = None

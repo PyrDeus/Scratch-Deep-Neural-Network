@@ -1,24 +1,16 @@
 
 
-from window import Screen
-
+from level import Level
 
 
 if __name__ == "__main__":
-    from utils import Color
-    import numpy as np
-
-    # w, h = extractMonitorDimensions()
-    # w, h = 640, 480
-    screen = Screen(selector=True)
-    screen.show()
+    level = Level()
 
     while True:
-        criteria = screen.waitEvent(time=100, verbose=False)
+        criteria = level.waitEvent(time=100, verbose=False)
         if criteria == 0:
             break
+        elif criteria == 2:
+            level.addRandomShape()
 
-        #screen.addShape(randomShape())
-
-        screen.update()
-    screen.destroyWindow()  # Garde-fou
+    level.end()

@@ -1,8 +1,17 @@
-#TODO
 
-from machine_learning import *
-from keras.models import Sequential
-from keras.layers import Dense
+
+from keras import Sequential, Input, Model
+# from keras import layers
+from keras.layers import Dense, BatchNormalization, BatchNormalization, Dropout, Activation
+from keras.losses import SparseCategoricalCrossentropy, CategoricalCrossentropy
+from keras.regularizers import L1, L2, L1L2
+from keras.initializers import GlorotUniform, GlorotNormal, TruncatedNormal, RandomUniform, RandomNormal
+from keras.activations import relu, linear, gelu
+from keras.optimizers import Adam
+from keras.metrics import SparseCategoricalAccuracy, CategoricalAccuracy
+from keras.callbacks import EarlyStopping
+from keras.utils import plot_model
+
 import os
 import pandas as pd
 import numpy as np
@@ -10,110 +19,122 @@ import networkx as nx
 
 import matplotlib.pyplot as plt
 
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
+# import tensorflow as tf
+# from tensorflow import keras
+# from tensorflow.keras import layers
 
 
+COLOR_NB = 6
+SHAPE_NB = 5
 
-class ColorAgent:
+class Agent:
     """
     Deep-learning agent.
     It interacts with the Canvas environment to understand its structure.
 
     It is capable of training and prediction based on the previous training.
     """
-    def __init__(self, input_size=2, output_size = 6, depth = 3, gamma=0.95, loss_fct="mse",
-                 opt_fct="adam", metrics=None):
+    def __init__(self, learning_rate=0.01, loss_fct=SparseCategoricalCrossentropy(from_logits=True),
+                 opt_fct=Adam, dropout_rate = 0.5, metrics=None):
+        self.model = None
+        self.history = None
         self.opt_fct = opt_fct
         self.loss_fct = loss_fct
 
-        self.gamma = gamma
+        self.hidden_shape = [32, 32, 32]
+        self.input_size = 2
+        self.output_size = [5, 6]
 
-        self.output_size = output_size
-        self.input_size = input_size
-
-        hidden_units = [32, 32]
-        learning_rate = 0.01
-        dropout_rate = 0.5
-        num_epochs = 300
-        batch_size = 256
-
-        if depth < 2:
-            raise Exception("Depth must be at least 2")
+        self.learning_rate = learning_rate
+        self.dropout_rate = dropout_rate
+        # self.num_epochs = 300
+        # self.batch_size = 256
 
         # self.network = NeuralNetwork()
         # self.network.add( Layer(input_size, activation_function='relu') )
         # self.network.extend( [ Layer(5, activation_function='relu') for _ in range(depth-2) ] )
         # self.network.add( Layer(output_size, activation_function='relu') )
 
-        self.create_model()
-        # self.model = Sequential()
-        # self.model.add(Dense(64, activation="relu", input_shape=(input_size,)))
-        # self.model.add(Dense(64, activation="relu"))
-        # self.model.add(Dense(32, activation="relu"))
-        # self.model.add(Dense(1, activation="linear"))
-        # self.model.compile(optimizer=self.opt_fct, loss=self.loss_fct, metrics=self.metrics)
+        self.createModel()
 
+    def plot_model(self):
+        plot_model(self.model, to_file="plot_model.png")
 
-    def learn(self, canvas):
-        model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate),
-            loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            metrics=[keras.metrics.SparseCategoricalAccuracy(name="acc")],
-        )
-        # Create an early stopping callback.
-        early_stopping = keras.callbacks.EarlyStopping(
-            monitor="val_acc", patience=50, restore_best_weights=True
-        )
+    def fit(self, x_train, y_train, num_epochs=300, batch_size=256, validation_split=0.2):
         # Fit the model.
-        history = model.fit(
+        self.history = self.model.fit(
             x=x_train,
             y=y_train,
             epochs=num_epochs,
             batch_size=batch_size,
-            validation_split=0.15,
-            callbacks=[early_stopping],
+            validation_split=validation_split,
+            callbacks=[
+                EarlyStopping(
+                    monitor="val_loss", patience=30, restore_best_weights=True, mode='min'
+                )],
         )
-        return history
+        return self.history
 
-    def create_model(self, hidden_units, num_classes, dropout_rate=0.2):
-        inputs = layers.Input(shape=(num_features,), name="input_features")
-        x = create_forward_network(hidden_units, dropout_rate, name=f"ffn_block1")(inputs)
-        for block_idx in range(4):
-            # Create an FFN block.
-            x1 = create_forward_network(hidden_units, dropout_rate, name=f"ffn_block{block_idx + 2}")(x)
-            # Add skip connection.
-            x = layers.Add(name=f"skip_connection{block_idx + 2}")([x, x1])
-        # Compute logits.
-        logits = layers.Dense(num_classes, name="logits")(x)
-        # Create the model.
-        return keras.Model(inputs=inputs, outputs=logits, name="baseline")
+    # def createModel(self): #OLD
+    #     self.model = Sequential()
+    #     self.model.add(Input(shape=(self.input_size,)))
+    #     # self.model.add(Dense(16, activation=linear, kernel_initializer=GlorotUniform()))
+    #     for neuron_nb in self.hidden_shape:
+    #         self.model.add(BatchNormalization())
+    #         self.model.add(Dropout(self.dropout_rate))
+    #         self.model.add(Dense(neuron_nb, kernel_initializer=GlorotUniform(), kernel_regularizer=L1(l1=0.01), activation=gelu))
+    #     self.model.add(Dense(self.output_size, activation=linear, kernel_initializer=GlorotUniform()))
+    #     self.model.compile(optimizer=self.opt_fct(learning_rate=self.learning_rate), loss=self.loss_fct,
+    #         metrics=[SparseCategoricalAccuracy(name="acc")])
 
-    def create_forward_network(self, hidden_units, dropout_rate, name=None):
-        fnn_layers = []
+    def createModel(self):
+        inputs = Input(shape=(self.input_size,))
+        x = inputs
+        for neuron_nb in self.hidden_shape:
+            x = BatchNormalization()(x)
+            x = Dropout(self.dropout_rate)(x)
+            x = Dense(neuron_nb, kernel_initializer=GlorotUniform(), kernel_regularizer=L1(0.01), activation=gelu)(x)
 
-        for units in hidden_units:
-            fnn_layers.append(layers.BatchNormalization())
-            fnn_layers.append(layers.Dropout(dropout_rate))
-            fnn_layers.append(layers.Dense(units, activation=tf.nn.gelu))
+        # Two output heads
+        shape_output = Dense(SHAPE_NB, activation='softmax', name='shape')(x)
+        color_output = Dense(COLOR_NB, activation='softmax', name='color')(x)
 
-        return keras.Sequential(fnn_layers, name=name)
+        self.model = Model(inputs=inputs, outputs=[shape_output, color_output])
+        self.model.compile(
+            optimizer=self.opt_fct(learning_rate=self.learning_rate),
+            loss={
+                'shape': SparseCategoricalCrossentropy(),
+                'color': SparseCategoricalCrossentropy()
+            },
+            metrics={
+                'shape': [SparseCategoricalAccuracy(name='shape_acc')],
+                'color': [SparseCategoricalAccuracy(name='color_acc')]
+            }
+        )
 
-    def plot_learning(self, history):
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
 
-        ax1.plot(history.history["loss"])
-        ax1.plot(history.history["val_loss"])
-        ax1.legend(["train", "test"], loc="upper right")
+    def plotLearning(self):
+        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
+
+        ax1.plot(self.history.history["loss"])
+        ax1.plot(self.history.history["val_loss"])
+        ax1.legend(["train", "val"], loc="upper right")
         ax1.set_xlabel("Epochs")
         ax1.set_ylabel("Loss")
 
-        ax2.plot(history.history["acc"])
-        ax2.plot(history.history["val_acc"])
-        ax2.legend(["train", "test"], loc="upper right")
+        # print(self.history.history.keys())
+
+        ax2.plot(self.history.history["color_color_acc"])
+        ax2.plot(self.history.history["val_color_color_acc"])
+        ax2.legend(["train", "val"], loc="upper right")
         ax2.set_xlabel("Epochs")
-        ax2.set_ylabel("Accuracy")
+        ax2.set_ylabel("Color Accuracy")
+
+        ax3.plot(self.history.history["shape_shape_acc"])
+        ax3.plot(self.history.history["val_shape_shape_acc"])
+        ax3.legend(["train", "val"], loc="upper right")
+        ax3.set_xlabel("Epochs")
+        ax3.set_ylabel("Shape Accuracy")
         plt.show()
 
     def act_train(self, states):

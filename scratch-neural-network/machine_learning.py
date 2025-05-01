@@ -79,7 +79,7 @@ class NeuralNetwork:
     def add(self, layer:Layer):
         self.layers.append(layer)
 
-    def extend(self, layers:numpy.ndarray):
+    def extend(self, layers:np.ndarray):
         for layer in layers:
             self.layers.append(layer)
 
@@ -132,5 +132,4 @@ if __name__ == "__main__":
     net[0, 0] = (Layer(3, activation_function='sigmoid'))
     print(type(net))
     print(type(net[0,0]))
-
 
