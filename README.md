@@ -29,3 +29,11 @@ To train the agent:
 - Samples could be seen as "training" / "validation" / "testing"
 - Currently working on another project (LLM)
 
+---
+
+# License
+
+This project is licensed under the GNU General Public License version 3 (GPLv3) for personal, educational, or non-commercial use.
+
+Commercial use, including use by companies, requires a separate proprietary license. Please contact verheeke.sacha@gmail.com for licensing inquiries.
+
