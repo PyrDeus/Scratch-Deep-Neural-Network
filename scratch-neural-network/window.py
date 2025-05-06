@@ -20,6 +20,7 @@ class Window(ABC):
         self.height = height
         self.width = width
         self.name = name if name is str else f"{id(self)}"
+        self.render = render
         if render:
             self._resetWindow()
             cv2.imshow(self.name, self.window)
@@ -33,7 +34,7 @@ class Window(ABC):
         pass
 
     def show(self, front=False):
-        if render:
+        if self.render:
             cv2.imshow(self.name, self.window)
             if front: self.__toFront()
 

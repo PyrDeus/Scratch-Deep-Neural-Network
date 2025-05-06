@@ -29,6 +29,10 @@ To train the agent:
 - Samples could be seen as "training" / "validation" / "testing"
 - Currently working on another project (LLM)
 
+# Illustrations
+Goal of Classification and Clustering:
+![](images/clustering_example.jpg "Clustering image"){width=75%}
+
 ---
 
 # License
