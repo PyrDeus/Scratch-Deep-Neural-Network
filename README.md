@@ -31,7 +31,7 @@ To train the agent:
 
 # Illustrations
 Goal of Classification and Clustering:
-![](images/clustering_example.jpg "Clustering image"){width=75%}
+![](images/illustrations/clustering_example.jpg "Clustering image"){width=75%}
 
 ---
 
