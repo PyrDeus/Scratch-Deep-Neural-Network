@@ -31,7 +31,8 @@ To train the agent:
 
 # Illustrations
 Goal of Classification and Clustering:
-<img src="https://github.com/PyrDeus/Scratch-Deep-Neural-Network/blob/machine_learning/images/illustrations/clustering_example.jpg" width="200" />
+
+<img src="https://github.com/PyrDeus/Scratch-Deep-Neural-Network/blob/machine_learning/images/illustrations/clustering_example.jpg" width="300" />
 
 
 ---
